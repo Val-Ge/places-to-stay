@@ -1,7 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
 import mongoose from 'mongoose';
-import dotenv, { config } from 'dotenv';
 import passport from 'passport';
 import session from 'express-session'
 import bodyParser from 'body-parser';
