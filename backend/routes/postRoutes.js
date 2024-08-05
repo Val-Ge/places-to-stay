@@ -3,10 +3,15 @@ import { validateBody } from '../validationMiddleware.js';
 import upload from '../uploadConfigs.js';
 import Post from '../models/post.js';
 import Comment from '../models/comment.js';
+import User from '../models/User.js';
+const ObjectId = mongoose.Types.ObjectId;
+import mongoose from 'mongoose';
 import { ensureAuthenticated, ensureAdmin } from '../config/auth.js';
+import { registerSchema, loginSchema, commentSchema, postSchema } from '../schemas.js';
 
 const router = express.Router();
-router.use(require('method-override')('_method'));
+import methodOverride from 'method-override';
+
 
 router.get('/new', ensureAuthenticated, ensureAdmin, (req, res) => {
     res.render('new');

@@ -6,18 +6,25 @@ import session from 'express-session'
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import connectFlash from 'connect-flash';
+import path from 'path';
+
+// Routes
+import userRoutes from './routes/userRoutes.js';
+import postRoutes from './routes/postRoutes.js';
+import blogRoutes from './routes/blogRoutes.js';
+
 const PORT = 5000;
 const app = express();
 
 //Passport config
-import passportConfig from './config/passport,js'; 
+import passportConfig from './config/passport.js'; 
 passportConfig(passport);
 
 //DB config
-// const db = process.env.Mongo_URI;
+const dbURI = 'mongodb://localhost:27017/PlacesToStay';
 
 //Connect to MongoDB
-mongoose.connect('mongodb://localhost:5000/PlacesToStay', {
+mongoose.connect(dbURI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
@@ -27,9 +34,19 @@ mongoose.connect('mongodb://localhost:5000/PlacesToStay', {
 //Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(cors());
+
+// CORS configuration
+const corsOptions = {
+    origin: 'http://localhost:3000', // Update this as per your client app's URL
+    optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
+
+// Ensure the SESSION_SECRET is being read correctly
+console.log('Session secret:', process.env.SESSION_SECRET);
+
 app.use(session({
-    seret: process.env.SESSION_SECRET,
+    secret: process.env.SESSION_SECRET,
     resave: true,
     saveUninitialized: true
 }));
@@ -45,14 +62,20 @@ app.use((req, res, next) => {
     next();
 });
 
-// Routes
-import userRoutes from './routes/userRoutes.js';
-import postRoutes from './routes/postRoutes.js';
-import messageRoutes from './routes/messageRoutes.js';
-
+//API Routes
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
-app.use('/api/messages', messageRoutes);
+app.use('/api/blogs', blogRoutes);
+
+// Serve static assets if in production
+if (process.env.NODE_ENV === 'production') {
+    // Set static folder
+    app.use(express.static('frontend/build'));
+
+    app.get('*', (req, res) => {
+        res.sendFile(path.resolve(__dirname, 'frontend', 'build', 'index.html'));
+    });
+}
 
 app.listen(PORT, () => {
     console.log(`server is listening on port ${PORT}`)
